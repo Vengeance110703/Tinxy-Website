@@ -18,8 +18,8 @@ export const getDevices = async (): Promise<getDevicesResponse> => {
 }
 
 // @ts-ignore
-export const getDeviceState: getDeviceStateResponse = async (
-  deviceID: number,
+export const getDeviceState = async (
+  deviceID: string,
   deviceNumber: number
 ): Promise<getDeviceStateResponse> => {
   const newURL = `${baseURL}${deviceID}/state?deviceNumber=${deviceNumber}`
@@ -27,20 +27,23 @@ export const getDeviceState: getDeviceStateResponse = async (
 }
 
 // @ts-ignore
-export const setDeviceState: setDeviceStateResponse = async (
-  deviceID: number,
+export const setDeviceState = async (
+  deviceID: string,
   deviceNumber: number,
   state: boolean
 ): Promise<setDeviceStateResponse> => {
-  const newURL = `${baseURL}${deviceID}/state`
+  const newURL = `${baseURL}${deviceID}/toggle`
   const newRequestOptions: RequestInit = {
-    ...requestOption,
+    headers: {
+      ...requestOption.headers,
+      "Content-Type": "application/json",
+    },
     method: "POST",
     body: JSON.stringify({
       request: {
         state: state ? 1 : 0,
       },
-      deviceNumeber: deviceNumber,
+      deviceNumber: deviceNumber,
     }),
   }
   return await fetchResponse(newURL, newRequestOptions)
