@@ -1,5 +1,5 @@
 export type Device = {
-  id: number
+  deviceNumber: number
   state: boolean
   name: string
 }
