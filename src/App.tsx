@@ -21,6 +21,7 @@ function App() {
   const [validated, setValidated] = useState(false)
   const [deviceList, setDeviceList] = useState<Device[]>([])
   const [deviceID, setDeviceID] = useState("")
+  const [counter, setCounter] = useState(0)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -51,9 +52,33 @@ function App() {
           })
         }
         setDeviceList(devices)
+        setCounter(1)
       }
     })
   }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (counter > 0) {
+        const devices: Device[] = []
+        for (const device of deviceList) {
+          const state =
+            (await getDeviceState(deviceID, device.deviceNumber)).state === "ON"
+              ? true
+              : false
+          devices.push({
+            ...device,
+            state: state,
+          })
+        }
+        setDeviceList(devices)
+        setCounter(counter + 1)
+        console.log("hello")
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [counter])
 
   const handleSignIn = async () => {
     try {
