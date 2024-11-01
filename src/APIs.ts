@@ -1,3 +1,9 @@
+import {
+  getDeviceStateResponse,
+  setDeviceStateResponse,
+  getDevicesResponse,
+} from "./alltypes"
+
 const baseURL = "https://backend.tinxy.in/v2/devices/"
 const requestOption: RequestInit = {
   headers: {
@@ -5,23 +11,27 @@ const requestOption: RequestInit = {
   },
 }
 
-export const getDevices = async () => {
-  return await fetchResponse(baseURL, requestOption)
+// @ts-ignore
+export const getDevices = async (): Promise<getDevicesResponse> => {
+  // @ts-ignore
+  return (await fetchResponse(baseURL, requestOption))[0]
 }
 
-export const getDeviceState = async (
+// @ts-ignore
+export const getDeviceState: getDeviceStateResponse = async (
   deviceID: number,
   deviceNumber: number
-) => {
+): Promise<getDeviceStateResponse> => {
   const newURL = `${baseURL}${deviceID}/state?deviceNumber=${deviceNumber}`
   return await fetchResponse(newURL, requestOption)
 }
 
-export const setDeviceState = async (
+// @ts-ignore
+export const setDeviceState: setDeviceStateResponse = async (
   deviceID: number,
   deviceNumber: number,
   state: boolean
-) => {
+): Promise<setDeviceStateResponse> => {
   const newURL = `${baseURL}${deviceID}/state`
   const newRequestOptions: RequestInit = {
     ...requestOption,
