@@ -2,7 +2,7 @@ import "./App.css"
 import { Button } from "./components/ui/button"
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth"
 import { auth, googleProvider } from "./config/firebase"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { getDevices, getDeviceState, setDeviceState } from "./APIs"
 import { Device } from "./alltypes"
 import { Switch } from "./components/ui/switch"
@@ -22,6 +22,9 @@ function App() {
   const [deviceList, setDeviceList] = useState<Device[]>([])
   const [deviceID, setDeviceID] = useState("")
   const [counter, setCounter] = useState(0)
+  const [stateChange, setStateChange] = useState(false)
+
+  const bufferRef = useRef<number>(0)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -58,27 +61,46 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (stateChange) {
+      bufferRef.current = 4
+    }
+  }, [stateChange])
+
+  useEffect(() => {
     const timer = setTimeout(async () => {
       if (counter > 0) {
-        const devices: Device[] = []
-        for (const device of deviceList) {
-          const state =
-            (await getDeviceState(deviceID, device.deviceNumber)).state === "ON"
-              ? true
-              : false
-          devices.push({
-            ...device,
-            state: state,
-          })
+        if (bufferRef.current === 0) {
+          const devices: Device[] = []
+          for (const device of deviceList) {
+            const state =
+              (await getDeviceState(deviceID, device.deviceNumber)).state ===
+              "ON"
+                ? true
+                : false
+            devices.push({
+              ...device,
+              state: state,
+            })
+          }
+          if (bufferRef.current === 0) {
+            setDeviceList(devices)
+          } else {
+            bufferRef.current = bufferRef.current - 1
+          }
+          setStateChange(false)
+        } else {
+          bufferRef.current -= 1
         }
-        setDeviceList(devices)
         setCounter(counter + 1)
-        console.log("hello")
       }
     }, 500)
 
     return () => clearTimeout(timer)
   }, [counter])
+
+  useEffect(() => {
+    console.log("Device list updated", deviceList)
+  }, [deviceList])
 
   const handleSignIn = async () => {
     try {
@@ -98,17 +120,18 @@ function App() {
   }
 
   const handleStateChange = async (device: Device, newState: boolean) => {
-    console.log(newState)
     const data = await setDeviceState(deviceID, device.deviceNumber, newState)
     const state = data.state === "ON" ? true : false
-    const updatedDevice = {
+    const updatedDevice: Device = {
       ...device,
       state: state,
     }
-    const updatedDeviceList = deviceList.map(ele =>
-      ele.deviceNumber === device.deviceNumber ? updatedDevice : ele
+    setStateChange(true)
+    setDeviceList(prevDeviceList =>
+      prevDeviceList.map(ele =>
+        ele.deviceNumber === device.deviceNumber ? updatedDevice : ele
+      )
     )
-    setDeviceList(updatedDeviceList)
   }
 
   return (
