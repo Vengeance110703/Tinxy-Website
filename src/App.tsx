@@ -6,6 +6,16 @@ import { useEffect, useState } from "react"
 import { getDevices, getDeviceState, setDeviceState } from "./APIs"
 import { Device } from "./alltypes"
 import { Switch } from "./components/ui/switch"
+import { FaGoogle } from "react-icons/fa"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./components/ui/card"
+import { Label } from "./components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar"
 
 function App() {
   const [validated, setValidated] = useState(false)
@@ -80,19 +90,69 @@ function App() {
     <>
       {validated ? (
         <>
-          <Button onClick={handleLogout}>Logout</Button>
-          {deviceList.map(device => (
-            <Switch
-              id={device.deviceNumber.toString()}
-              checked={device.state}
-              onCheckedChange={checked => handleStateChange(device, checked)}
-            >
-              {device.name}
-            </Switch>
-          ))}
+          <div className="container mx-auto p-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+              <h1 className="text-2xl font-bold">Tinxy Dashboard</h1>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="font-medium">Yash Sheth</p>
+                  <p className="text-sm text-gray-500">yashsheth66@gmail.com</p>
+                </div>
+                <Avatar>
+                  <AvatarImage
+                    src={auth.currentUser?.photoURL!}
+                    alt="Yash Sheth"
+                  />
+                  <AvatarFallback className="">
+                    {auth.currentUser
+                      ?.displayName!.split(" ")
+                      .map(n => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <Button onClick={handleLogout}>Logout</Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {deviceList.map((device, index) => (
+                <Card key={index} className="p-6">
+                  <div className="flex flex-col items-center space-y-6">
+                    <Label
+                      htmlFor={device.deviceNumber.toString()}
+                      className="text-2xl font-medium"
+                    >
+                      {device.name}
+                    </Label>
+                    <Switch
+                      id={device.deviceNumber.toString()}
+                      checked={device.state}
+                      onCheckedChange={checked =>
+                        handleStateChange(device, checked)
+                      }
+                      className="bg-gray-800 scale-125"
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
         </>
       ) : (
-        <Button onClick={handleSignIn}>Sign in</Button>
+        <div className="flex justify-center items-center h-screen bg-gray-100">
+          <Card className="w-[350px]">
+            <CardHeader>
+              <CardTitle>Welcome to Tinxy Website</CardTitle>
+              <CardDescription>Sign in to access your account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" onClick={handleSignIn}>
+                <FaGoogle className="mr-2 h-4 w-4" />
+                Sign in with Google
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </>
   )
