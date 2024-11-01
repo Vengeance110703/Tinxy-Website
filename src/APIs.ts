@@ -48,6 +48,6 @@ const fetchResponse = async (url: string, requestOption: RequestInit) => {
     }
   } catch (error) {
     console.error(error)
-    return {}
+    return null
   }
 }
